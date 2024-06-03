@@ -1,0 +1,87 @@
+package ecs_test
+
+import (
+	"testing"
+
+	"github.com/rpg_game/ecs"
+)
+
+type userCharacterEntity struct {
+	name string
+	age  uint8
+}
+
+type testStorageOne struct{}
+type testStorageTwo struct{}
+type testStorageThree struct{}
+
+func TestStorage(t *testing.T) {
+	store := ecs.NewStorage()
+	seStorage := ecs.GetStorage(store, userCharacterEntity{})
+
+	seStorage.AddItem(userCharacterEntity{
+		name: "Eugene",
+		age:  26,
+	})
+
+	seStorage.AddItem(userCharacterEntity{
+		name: "Oleg",
+		age:  60,
+	})
+
+}
+
+func TestStorageUpdate(t *testing.T) {
+	store := ecs.NewStorage()
+	seStorage := ecs.GetStorage(store, userCharacterEntity{})
+
+	userId := seStorage.AddItem(userCharacterEntity{
+		name: "Eugene",
+		age:  24,
+	})
+
+	var expectedName string = "Oleg"
+	var expectedAge uint8 = 45
+
+	seStorage.SetItem(userId, userCharacterEntity{
+		name: expectedName,
+		age:  expectedAge,
+	})
+
+	user, _ := seStorage.GetItem(userId)
+	if user.name != "Oleg" || user.age != 45 {
+		t.Errorf("Error while update entity. Expected name=%s, age=%d; recieved name=%s, age=%d", expectedName, expectedAge, user.name, user.age)
+	}
+}
+
+func TestStorageDelete(t *testing.T) {
+	store := ecs.NewStorage()
+	seStorage := ecs.GetStorage(store, userCharacterEntity{})
+
+	userId := seStorage.AddItem(userCharacterEntity{
+		name: "Eugene",
+		age:  24,
+	})
+
+	seStorage.RemoveItem(userId)
+	_, exist := seStorage.GetItem(userId)
+	if exist {
+		t.Errorf("Entity exist after remove operation")
+	}
+}
+
+func TestCreateManyStorages(t *testing.T) {
+	store := ecs.NewStorage()
+	s1 := ecs.GetStorage(store, testStorageOne{})
+	s2 := ecs.GetStorage(store, testStorageTwo{})
+	s3 := ecs.GetStorage(store, testStorageThree{})
+
+	s1.AddItem(testStorageOne{})
+	s2.AddItem(testStorageTwo{})
+	s3.AddItem(testStorageThree{})
+
+	if len(s1.GetAllItems()) != 1 || len(s2.GetAllItems()) != 1 || len(s3.GetAllItems()) != 1 {
+		t.Error("Every created storages must have only one entity.")
+	}
+
+}
