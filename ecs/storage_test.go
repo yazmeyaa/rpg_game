@@ -1,6 +1,8 @@
 package ecs_test
 
 import (
+	"fmt"
+	"sync"
 	"testing"
 
 	"github.com/rpg_game/ecs"
@@ -28,7 +30,6 @@ func TestStorage(t *testing.T) {
 		name: "Oleg",
 		age:  60,
 	})
-
 }
 
 func TestStorageUpdate(t *testing.T) {
@@ -83,5 +84,27 @@ func TestCreateManyStorages(t *testing.T) {
 	if len(s1.GetAllItems()) != 1 || len(s2.GetAllItems()) != 1 || len(s3.GetAllItems()) != 1 {
 		t.Error("Every created storages must have only one entity.")
 	}
+}
 
+func TestStorageParallelOperations(t *testing.T) {
+	storage := ecs.NewStorage()
+	userStorage := ecs.GetStorage(storage, userCharacterEntity{})
+	wg := sync.WaitGroup{}
+	wg.Add(100)
+
+	userId := userStorage.AddItem(userCharacterEntity{
+		name: "Eugene",
+		age:  42,
+	})
+
+	for i := 0; i < 100; i++ {
+		go func() {
+			defer wg.Done()
+			user, _ := userStorage.GetItem(userId)
+			user.name = fmt.Sprintf("%s_%d", user.name, i)
+			userStorage.SetItem(userId, user)
+		}()
+	}
+
+	wg.Wait()
 }

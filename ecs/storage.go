@@ -69,8 +69,8 @@ func (s *BasicStorage[T]) NewId() Id {
 }
 
 func (s *BasicStorage[T]) SetItem(id Id, item T) {
-	s.mx.RLock()
-	defer s.mx.RUnlock()
+	s.mx.Lock()
+	defer s.mx.Unlock()
 
 	s.items[id] = item
 }
