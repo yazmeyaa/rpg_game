@@ -19,7 +19,8 @@ type testStorageThree struct{}
 
 func TestStorage(t *testing.T) {
 	store := ecs.NewStorage()
-	seStorage := ecs.GetStorage(store, userCharacterEntity{})
+	ecs.SetupStorage(store, userCharacterEntity{}, 10)
+	seStorage, _ := ecs.GetStorage(store, userCharacterEntity{})
 
 	seStorage.AddItem(userCharacterEntity{
 		name: "Eugene",
@@ -34,7 +35,8 @@ func TestStorage(t *testing.T) {
 
 func TestStorageUpdate(t *testing.T) {
 	store := ecs.NewStorage()
-	seStorage := ecs.GetStorage(store, userCharacterEntity{})
+	ecs.SetupStorage(store, userCharacterEntity{}, 10)
+	seStorage, _ := ecs.GetStorage(store, userCharacterEntity{})
 
 	userId := seStorage.AddItem(userCharacterEntity{
 		name: "Eugene",
@@ -57,7 +59,8 @@ func TestStorageUpdate(t *testing.T) {
 
 func TestStorageDelete(t *testing.T) {
 	store := ecs.NewStorage()
-	seStorage := ecs.GetStorage(store, userCharacterEntity{})
+	ecs.SetupStorage(store, userCharacterEntity{}, 10)
+	seStorage, _ := ecs.GetStorage(store, userCharacterEntity{})
 
 	userId := seStorage.AddItem(userCharacterEntity{
 		name: "Eugene",
@@ -73,9 +76,12 @@ func TestStorageDelete(t *testing.T) {
 
 func TestCreateManyStorages(t *testing.T) {
 	store := ecs.NewStorage()
-	s1 := ecs.GetStorage(store, testStorageOne{})
-	s2 := ecs.GetStorage(store, testStorageTwo{})
-	s3 := ecs.GetStorage(store, testStorageThree{})
+	ecs.SetupStorage(store, testStorageOne{}, 10)
+	ecs.SetupStorage(store, testStorageTwo{}, 10)
+	ecs.SetupStorage(store, testStorageThree{}, 10)
+	s1, _ := ecs.GetStorage(store, testStorageOne{})
+	s2, _ := ecs.GetStorage(store, testStorageTwo{})
+	s3, _ := ecs.GetStorage(store, testStorageThree{})
 
 	s1.AddItem(testStorageOne{})
 	s2.AddItem(testStorageTwo{})
@@ -88,7 +94,8 @@ func TestCreateManyStorages(t *testing.T) {
 
 func TestStorageParallelOperations(t *testing.T) {
 	storage := ecs.NewStorage()
-	userStorage := ecs.GetStorage(storage, userCharacterEntity{})
+	ecs.SetupStorage(storage, userCharacterEntity{}, 120)
+	userStorage, _ := ecs.GetStorage(storage, userCharacterEntity{})
 	wg := sync.WaitGroup{}
 	wg.Add(100)
 
