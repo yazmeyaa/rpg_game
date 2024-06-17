@@ -6,6 +6,15 @@ import (
 )
 
 type World struct {
-	Components ecsstorage.ComponentsManager
-	Systems    systems.Systems
+	Components *ecsstorage.ComponentsManager
+	Systems    *systems.Systems
+}
+
+func NewWorld(systemsCount int) *World {
+	manager := ecsstorage.NewComponentsManager()
+	systems := systems.NewSystems(systemsCount)
+	return &World{
+		Components: manager,
+		Systems:    systems,
+	}
 }

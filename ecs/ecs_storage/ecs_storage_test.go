@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	ecsstorage "github.com/yazmeyaa/rpg_game/ecs/ecs_storage"
+	"github.com/yazmeyaa/rpg_game/ecs/world"
 )
 
 const max_entities_size int = 1500
@@ -13,12 +14,12 @@ type Position struct{ X, Y float32 }
 type Health struct{ hp uint32 }
 
 func TestEcsStorage(t *testing.T) {
-	manager := ecsstorage.NewComponentsManager()
-	ecsstorage.RegisterComponent(manager, Position{}, max_entities_size, func() *Position {
+	world := world.NewWorld(1)
+	ecsstorage.RegisterComponent(world.Components, Position{}, max_entities_size, func() *Position {
 		return &Position{}
 	})
 
-	store, exist := ecsstorage.GetComponentStorage(manager, Position{})
+	store, exist := ecsstorage.GetComponentStorage(world.Components, Position{})
 	if !exist {
 		t.Error("Storage is not registered after registration")
 	}
