@@ -2,35 +2,42 @@ package movement
 
 import (
 	ecsstorage "github.com/yazmeyaa/rpg_game/ecs/ecs_storage"
-	"github.com/yazmeyaa/rpg_game/ecs/systems"
 	"github.com/yazmeyaa/rpg_game/ecs/world"
 )
 
 type MovementSystem struct {
-	world *world.World
+	world           *world.World
+	positionStorage *ecsstorage.ComponentStorage[Position]
+	movementStorage *ecsstorage.ComponentStorage[Movement]
 }
 
-func NewMovementSystem(world *world.World) systems.System {
+func NewMovementSystem(world *world.World) *MovementSystem {
+	pStore, _ := ecsstorage.GetComponentStorage(world.Components, Position{})
+	mStore, _ := ecsstorage.GetComponentStorage(world.Components, Movement{})
 	return &MovementSystem{
-		world: world,
+		world:           world,
+		positionStorage: pStore,
+		movementStorage: mStore,
 	}
 }
 
-func (s MovementSystem) Compute() {
-	positionStore, _ := ecsstorage.GetComponentStorage(&s.world.Components, Position{})
-	movementStore, _ := ecsstorage.GetComponentStorage(&s.world.Components, Movement{})
+func (s *MovementSystem) World() *world.World {
+	return s.world
+}
 
-	bitmap := positionStore.Bitmap()
-	bitmap.And(movementStore.Bitmap())
+func (s *MovementSystem) Compute() {
+
+	bitmap := s.positionStorage.Bitmap()
+	bitmap.And(s.movementStorage.Bitmap())
 
 	bitmap.Range(func(x uint32) {
-		pos, _ := positionStore.Get(int(x))
-		mov, _ := movementStore.Get(int(x))
+		pos, _ := s.positionStorage.Get(int(x))
+		mov, _ := s.movementStorage.Get(int(x))
 		pos.X += mov.Velocity.X
 		pos.Y += mov.Velocity.Y
 	})
 }
 
-func (s MovementSystem) Priority() uint8 {
+func (s *MovementSystem) Priority() uint8 {
 	return 1
 }
