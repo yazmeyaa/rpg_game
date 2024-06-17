@@ -11,10 +11,8 @@ type World struct {
 }
 
 func NewWorld(systemsCount int) *World {
-	manager := ecsstorage.NewComponentsManager()
-	systems := systems.NewSystems(systemsCount)
 	return &World{
-		Components: manager,
-		Systems:    systems,
+		Components: ecsstorage.NewComponentsManager(),
+		Systems:    systems.NewSystems(systemsCount),
 	}
 }
