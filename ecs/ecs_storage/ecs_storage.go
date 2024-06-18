@@ -8,6 +8,12 @@ import (
 	"github.com/yazmeyaa/sparse_set"
 )
 
+type ComponentStorer interface {
+	Name() string
+	Serialize() ([]byte, error)
+	Load(data []byte) error
+}
+
 type ComponentsManager struct {
 	stores map[string]any
 	bitmap map[string]*bitmap.Bitmap
@@ -20,13 +26,27 @@ func NewComponentsManager() *ComponentsManager {
 	}
 }
 
+func (cm *ComponentsManager) IterateOverStores(fn func(key string, store ComponentStorer)) {
+	for key, value := range cm.stores {
+		if storer, ok := value.(ComponentStorer); ok {
+			fn(key, storer)
+		} else {
+			continue
+		}
+	}
+}
+
 func (cm *ComponentsManager) getBitmap(dist any) (*bitmap.Bitmap, bool) {
 	bm, exist := cm.bitmap[getName(dist)]
 	return bm, exist
 }
 
 func getName(dist any) string {
-	return reflect.TypeOf(dist).String()
+	typeName := reflect.TypeOf(dist).String()
+	if typeName[0] == '*' {
+		return typeName[1:]
+	}
+	return typeName
 }
 
 func RegisterComponent[T any](cm *ComponentsManager, component T, max_entities_size int, newFunc func() *T) {
@@ -152,4 +172,12 @@ func (cs *ComponentStorage[T]) Bitmap() bitmap.Bitmap {
 	bitmap, _ := cs.cm.getBitmap(cs.componentReference)
 	clone := bitmap.Clone(nil)
 	return clone
+}
+
+func (cs *ComponentStorage[T]) Name() string {
+	return cs.name
+}
+
+func (cs *ComponentStorage[T]) Load(data []byte) error {
+	return cs.load(data)
 }

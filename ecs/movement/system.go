@@ -6,7 +6,6 @@ import (
 )
 
 type MovementSystem struct {
-	world           *world.World
 	positionStorage *ecsstorage.ComponentStorage[Position]
 	movementStorage *ecsstorage.ComponentStorage[Movement]
 }
@@ -15,18 +14,12 @@ func NewMovementSystem(world *world.World) *MovementSystem {
 	pStore, _ := ecsstorage.GetComponentStorage(world.Components, Position{})
 	mStore, _ := ecsstorage.GetComponentStorage(world.Components, Movement{})
 	return &MovementSystem{
-		world:           world,
 		positionStorage: pStore,
 		movementStorage: mStore,
 	}
 }
 
-func (s *MovementSystem) World() *world.World {
-	return s.world
-}
-
 func (s *MovementSystem) Compute() {
-
 	bitmap := s.positionStorage.Bitmap()
 	bitmap.And(s.movementStorage.Bitmap())
 

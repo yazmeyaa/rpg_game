@@ -1,6 +1,7 @@
 package ecsstorage_test
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 
@@ -28,6 +29,10 @@ func TestEcsStorage(t *testing.T) {
 		X: 2,
 		Y: 4,
 	})
+
+	a, _ := store.Serialize()
+
+	fmt.Println(string(a))
 
 	exist = store.Has(1)
 	if !exist {
