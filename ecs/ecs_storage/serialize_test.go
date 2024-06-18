@@ -24,7 +24,7 @@ func TestSerializeData(t *testing.T) {
 	assert.True(t, exist)
 	assert.Equal(t, &movement.Position{X: 2, Y: 2}, pos)
 
-	data, err := store.Serialize()
+	data, err := store.ToJSON()
 	assert.NoError(t, err, "Ошибка при сериализации данных")
 
 	var deserializedData map[string]map[int]movement.Position
@@ -49,7 +49,7 @@ func TestLoad(t *testing.T) {
 	assert.True(t, exist)
 	assert.Equal(t, &movement.Position{X: 2, Y: 2}, pos)
 
-	data, err := store.Serialize()
+	data, err := store.ToJSON()
 	assert.NoError(t, err, "Ошибка при сериализации данных")
 
 	newManager := ecsstorage.NewComponentsManager()

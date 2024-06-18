@@ -177,7 +177,3 @@ func (cs *ComponentStorage[T]) Bitmap() bitmap.Bitmap {
 func (cs *ComponentStorage[T]) Name() string {
 	return cs.name
 }
-
-func (cs *ComponentStorage[T]) Load(data []byte) error {
-	return cs.load(data)
-}

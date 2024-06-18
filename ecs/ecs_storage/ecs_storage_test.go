@@ -30,7 +30,7 @@ func TestEcsStorage(t *testing.T) {
 		Y: 4,
 	})
 
-	a, _ := store.Serialize()
+	a, _ := store.ToJSON()
 
 	fmt.Println(string(a))
 

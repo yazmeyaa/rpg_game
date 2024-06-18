@@ -9,7 +9,7 @@ type SerializedData[T any] struct {
 	Components map[int]T `json:"components"`
 }
 
-func (cs *ComponentStorage[T]) Serialize() ([]byte, error) {
+func (cs *ComponentStorage[T]) ToJSON() ([]byte, error) {
 	a := SerializedData[*T]{
 		Components: cs.components,
 	}
@@ -35,4 +35,8 @@ func (cs *ComponentStorage[T]) load(data []byte) error {
 	}
 
 	return nil
+}
+
+func (cs *ComponentStorage[T]) Load(data []byte) error {
+	return cs.load(data)
 }
