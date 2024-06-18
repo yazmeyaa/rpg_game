@@ -10,7 +10,7 @@ import (
 
 type ComponentStorer interface {
 	Name() string
-	Serialize() ([]byte, error)
+	ToJSON() ([]byte, error)
 	Load(data []byte) error
 }
 

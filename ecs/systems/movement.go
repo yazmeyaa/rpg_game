@@ -1,18 +1,19 @@
-package movement
+package systems
 
 import (
+	"github.com/yazmeyaa/rpg_game/ecs/components"
 	ecsstorage "github.com/yazmeyaa/rpg_game/ecs/ecs_storage"
 	"github.com/yazmeyaa/rpg_game/ecs/world"
 )
 
 type MovementSystem struct {
-	positionStorage *ecsstorage.ComponentStorage[Position]
-	movementStorage *ecsstorage.ComponentStorage[Movement]
+	positionStorage *ecsstorage.ComponentStorage[components.Position]
+	movementStorage *ecsstorage.ComponentStorage[components.Movement]
 }
 
 func NewMovementSystem(world *world.World) *MovementSystem {
-	pStore, _ := ecsstorage.GetComponentStorage(world.Components, Position{})
-	mStore, _ := ecsstorage.GetComponentStorage(world.Components, Movement{})
+	pStore, _ := ecsstorage.GetComponentStorage(world.Components, components.Position{})
+	mStore, _ := ecsstorage.GetComponentStorage(world.Components, components.Movement{})
 	return &MovementSystem{
 		positionStorage: pStore,
 		movementStorage: mStore,

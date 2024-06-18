@@ -10,7 +10,7 @@ func (cm *ComponentsManager) Save(path string) error {
 	out := make(map[string]string)
 
 	cm.IterateOverStores(func(key string, cs ComponentStorer) {
-		str, _ := cs.Serialize()
+		str, _ := cs.ToJSON()
 		out[key] = string(str)
 	})
 

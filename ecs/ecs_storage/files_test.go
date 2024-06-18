@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/yazmeyaa/rpg_game/ecs/components"
 	ecsstorage "github.com/yazmeyaa/rpg_game/ecs/ecs_storage"
-	"github.com/yazmeyaa/rpg_game/ecs/movement"
 )
 
 type TestComponent struct {
@@ -22,8 +22,8 @@ func newTestComponent() *TestComponent {
 func TestComponentsManager_Save(t *testing.T) {
 	cm := ecsstorage.NewComponentsManager()
 	ecsstorage.RegisterComponent(cm, TestComponent{}, 10, newTestComponent)
-	ecsstorage.RegisterComponent(cm, movement.Position{}, 10, func() *movement.Position {
-		return &movement.Position{}
+	ecsstorage.RegisterComponent(cm, components.Position{}, 10, func() *components.Position {
+		return &components.Position{}
 	})
 
 	component := TestComponent{Value: 42}
@@ -48,8 +48,8 @@ func TestComponentsManager_Save(t *testing.T) {
 
 	newCm := ecsstorage.NewComponentsManager()
 	ecsstorage.RegisterComponent(newCm, TestComponent{}, 10, newTestComponent)
-	ecsstorage.RegisterComponent(newCm, movement.Position{}, 10, func() *movement.Position {
-		return &movement.Position{}
+	ecsstorage.RegisterComponent(newCm, components.Position{}, 10, func() *components.Position {
+		return &components.Position{}
 	})
 
 	newCm.Load(savePath)
