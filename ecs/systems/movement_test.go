@@ -6,7 +6,7 @@ import (
 	"github.com/deeean/go-vector/vector2"
 	"github.com/stretchr/testify/assert"
 	"github.com/yazmeyaa/rpg_game/ecs/components"
-	ecsstorage "github.com/yazmeyaa/rpg_game/ecs/ecs_storage"
+	ecsstorage "github.com/yazmeyaa/rpg_game/ecs/storage"
 	"github.com/yazmeyaa/rpg_game/ecs/systems"
 	"github.com/yazmeyaa/rpg_game/ecs/world"
 )
@@ -14,10 +14,10 @@ import (
 func TestMovementSystem(t *testing.T) {
 	world := world.NewWorld(2)
 
-	ecsstorage.RegisterComponent(world.Components, components.Position{}, 100, func() *components.Position {
+	ecsstorage.RegisterComponent(world.Components, components.POSITION_STORAGE_NAME, components.Position{}, 100, func() *components.Position {
 		return &components.Position{}
 	})
-	ecsstorage.RegisterComponent(world.Components, components.Movement{}, 100, func() *components.Movement {
+	ecsstorage.RegisterComponent(world.Components, components.MOVEMENT_STORAGE_NAME, components.Movement{}, 100, func() *components.Movement {
 		return &components.Movement{}
 	})
 
@@ -27,8 +27,8 @@ func TestMovementSystem(t *testing.T) {
 	entityID1 := 1
 	entityID2 := 2
 
-	posStore, _ := ecsstorage.GetComponentStorage(world.Components, components.Position{})
-	movStore, _ := ecsstorage.GetComponentStorage(world.Components, components.Movement{})
+	posStore, _ := ecsstorage.GetComponentStorage[components.Position](world.Components, components.POSITION_STORAGE_NAME)
+	movStore, _ := ecsstorage.GetComponentStorage[components.Movement](world.Components, components.MOVEMENT_STORAGE_NAME)
 
 	posStore.Add(entityID1, components.Position{X: 0, Y: 0})
 	movStore.Add(entityID1, components.Movement{Velocity: vector2.Vector2{X: 1, Y: 1}})

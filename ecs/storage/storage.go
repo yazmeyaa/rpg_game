@@ -1,7 +1,6 @@
-package ecsstorage
+package storage
 
 import (
-	"reflect"
 	"sync"
 
 	"github.com/kelindar/bitmap"
@@ -36,29 +35,20 @@ func (cm *ComponentsManager) IterateOverStores(fn func(key string, store Compone
 	}
 }
 
-func (cm *ComponentsManager) getBitmap(dist any) (*bitmap.Bitmap, bool) {
-	bm, exist := cm.bitmap[getName(dist)]
+func (cm *ComponentsManager) getBitmap(dist any, storeName string) (*bitmap.Bitmap, bool) {
+	bm, exist := cm.bitmap[storeName]
 	return bm, exist
 }
 
-func getName(dist any) string {
-	typeName := reflect.TypeOf(dist).String()
-	if typeName[0] == '*' {
-		return typeName[1:]
-	}
-	return typeName
-}
-
-func RegisterComponent[T any](cm *ComponentsManager, component T, max_entities_size int, newFunc func() *T) {
-	name := getName(component)
-	if _, exist := cm.stores[name]; exist {
+func RegisterComponent[T any](cm *ComponentsManager, storeName string, component T, max_entities_size int, newFunc func() *T) {
+	if _, exist := cm.stores[storeName]; exist {
 		return
 	}
 
-	cm.stores[name] = NewComponentStorage(cm, max_entities_size, newFunc)
+	cm.stores[storeName] = NewComponentStorage(cm, max_entities_size, newFunc, storeName)
 	bm := &bitmap.Bitmap{}
 	bm.Grow(uint32(max_entities_size))
-	cm.bitmap[name] = bm
+	cm.bitmap[storeName] = bm
 }
 
 type ComponentStorage[T any] struct {
@@ -71,10 +61,10 @@ type ComponentStorage[T any] struct {
 	mx                 sync.RWMutex
 }
 
-func NewComponentStorage[T any](cm *ComponentsManager, max_entities_size int, newFunc func() *T) *ComponentStorage[T] {
+func NewComponentStorage[T any](cm *ComponentsManager, max_entities_size int, newFunc func() *T, storeName string) *ComponentStorage[T] {
 	return &ComponentStorage[T]{
 		componentReference: *newFunc(),
-		name:               getName(newFunc()),
+		name:               storeName,
 		components:         make(map[int]*T),
 		sparseSet:          *sparse_set.NewSparseSet(uint32(max_entities_size)),
 		pool: sync.Pool{
@@ -86,9 +76,8 @@ func NewComponentStorage[T any](cm *ComponentsManager, max_entities_size int, ne
 	}
 }
 
-func GetComponentStorage[T any](cm *ComponentsManager, dist T) (*ComponentStorage[T], bool) {
-	name := getName(dist)
-	storage, exist := cm.stores[name]
+func GetComponentStorage[T any](cm *ComponentsManager, storeName string) (*ComponentStorage[T], bool) {
+	storage, exist := cm.stores[storeName]
 	if !exist {
 		return nil, false
 	}
@@ -134,7 +123,7 @@ func (cs *ComponentStorage[T]) Add(entityId int, component T) {
 		cs.components[entityId] = comp
 		cs.sparseSet.Add(entityId)
 
-		bm, _ := cs.cm.getBitmap(component)
+		bm, _ := cs.cm.getBitmap(component, cs.name)
 		bm.Set(uint32(entityId))
 	}
 }
@@ -152,7 +141,7 @@ func (cs *ComponentStorage[T]) Delete(entityId int) {
 	cs.sparseSet.Remove(entityId)
 	delete(cs.components, entityId)
 
-	bm, _ := cs.cm.getBitmap(cs.componentReference)
+	bm, _ := cs.cm.getBitmap(cs.componentReference, cs.name)
 	bm.Remove(uint32(entityId))
 }
 
@@ -169,7 +158,7 @@ func (cs *ComponentStorage[T]) Bitmap() bitmap.Bitmap {
 	cs.mx.RLock()
 	defer cs.mx.RUnlock()
 
-	bitmap, _ := cs.cm.getBitmap(cs.componentReference)
+	bitmap, _ := cs.cm.getBitmap(cs.componentReference, cs.name)
 	clone := bitmap.Clone(nil)
 	return clone
 }

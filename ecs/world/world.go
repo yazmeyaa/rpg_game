@@ -1,17 +1,17 @@
 package world
 
 import (
-	ecsstorage "github.com/yazmeyaa/rpg_game/ecs/ecs_storage"
+	"github.com/yazmeyaa/rpg_game/ecs/storage"
 )
 
 type World struct {
-	Components *ecsstorage.ComponentsManager
+	Components *storage.ComponentsManager
 	Systems    *Systems
 }
 
 func NewWorld(systemsCount int) *World {
 	return &World{
-		Components: ecsstorage.NewComponentsManager(),
+		Components: storage.NewComponentsManager(),
 		Systems:    NewSystems(systemsCount),
 	}
 }

@@ -1,4 +1,4 @@
-package ecsstorage
+package storage
 
 import (
 	"encoding/json"

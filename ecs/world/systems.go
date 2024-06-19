@@ -1,6 +1,9 @@
 package world
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 type System interface {
 	Compute()
@@ -31,6 +34,7 @@ func (s *Systems) AddSystem(system System) {
 
 func (s *Systems) Update() {
 	for _, system := range s.items {
+		fmt.Printf("SYSTEM: >>>>>>>>>>>>>>>>>>>>>>>> \n\n%+v\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n", system)
 		system.Compute()
 	}
 }

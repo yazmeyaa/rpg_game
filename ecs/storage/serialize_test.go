@@ -1,4 +1,4 @@
-package ecsstorage_test
+package storage_test
 
 import (
 	"encoding/json"
@@ -7,17 +7,17 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/yazmeyaa/rpg_game/ecs/components"
-	ecsstorage "github.com/yazmeyaa/rpg_game/ecs/ecs_storage"
+	"github.com/yazmeyaa/rpg_game/ecs/storage"
 )
 
 func TestSerializeData(t *testing.T) {
 	var max_entities_size int = 20
-	manager := ecsstorage.NewComponentsManager()
-	ecsstorage.RegisterComponent(manager, components.Position{}, max_entities_size, func() *components.Position {
+	manager := storage.NewComponentsManager()
+	storage.RegisterComponent(manager, "position", components.Position{}, max_entities_size, func() *components.Position {
 		return &components.Position{}
 	})
 
-	store, _ := ecsstorage.GetComponentStorage(manager, components.Position{})
+	store, _ := storage.GetComponentStorage[components.Position](manager, "position")
 
 	store.Add(1, components.Position{X: 2, Y: 2})
 	pos, exist := store.Get(1)
@@ -37,12 +37,12 @@ func TestSerializeData(t *testing.T) {
 
 func TestLoad(t *testing.T) {
 	var max_entities_size int = 20
-	manager := ecsstorage.NewComponentsManager()
-	ecsstorage.RegisterComponent(manager, components.Position{}, max_entities_size, func() *components.Position {
+	manager := storage.NewComponentsManager()
+	storage.RegisterComponent(manager, "position", components.Position{}, max_entities_size, func() *components.Position {
 		return &components.Position{}
 	})
 
-	store, _ := ecsstorage.GetComponentStorage(manager, components.Position{})
+	store, _ := storage.GetComponentStorage[components.Position](manager, "position")
 
 	store.Add(1, components.Position{X: 2, Y: 2})
 	pos, exist := store.Get(1)
@@ -52,12 +52,12 @@ func TestLoad(t *testing.T) {
 	data, err := store.ToJSON()
 	assert.NoError(t, err, "Ошибка при сериализации данных")
 
-	newManager := ecsstorage.NewComponentsManager()
-	ecsstorage.RegisterComponent(newManager, components.Position{}, max_entities_size, func() *components.Position {
+	newManager := storage.NewComponentsManager()
+	storage.RegisterComponent(newManager, "position", components.Position{}, max_entities_size, func() *components.Position {
 		return &components.Position{}
 	})
 
-	newStore, _ := ecsstorage.GetComponentStorage(newManager, components.Position{})
+	newStore, _ := storage.GetComponentStorage[components.Position](newManager, "position")
 	fmt.Println(string(data), newStore)
 
 	laodError := newStore.Load(data)

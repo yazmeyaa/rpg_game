@@ -1,11 +1,11 @@
-package ecsstorage_test
+package storage_test
 
 import (
 	"fmt"
 	"sync"
 	"testing"
 
-	ecsstorage "github.com/yazmeyaa/rpg_game/ecs/ecs_storage"
+	"github.com/yazmeyaa/rpg_game/ecs/storage"
 	"github.com/yazmeyaa/rpg_game/ecs/world"
 )
 
@@ -16,11 +16,11 @@ type Health struct{ hp uint32 }
 
 func TestEcsStorage(t *testing.T) {
 	world := world.NewWorld(1)
-	ecsstorage.RegisterComponent(world.Components, Position{}, max_entities_size, func() *Position {
+	storage.RegisterComponent(world.Components, "position", Position{}, max_entities_size, func() *Position {
 		return &Position{}
 	})
 
-	store, exist := ecsstorage.GetComponentStorage(world.Components, Position{})
+	store, exist := storage.GetComponentStorage[Position](world.Components, "position")
 	if !exist {
 		t.Error("Storage is not registered after registration")
 	}
@@ -46,20 +46,20 @@ func TestEcsStorage(t *testing.T) {
 }
 
 func TestBitmap(t *testing.T) {
-	manager := ecsstorage.NewComponentsManager()
-	ecsstorage.RegisterComponent(manager, Position{}, max_entities_size, func() *Position {
+	manager := storage.NewComponentsManager()
+	storage.RegisterComponent(manager, "position", Position{}, max_entities_size, func() *Position {
 		return &Position{}
 	})
-	ecsstorage.RegisterComponent(manager, Health{}, max_entities_size, func() *Health {
+	storage.RegisterComponent(manager, "health", Health{}, max_entities_size, func() *Health {
 		return &Health{}
 	})
 
-	positionStore, exist := ecsstorage.GetComponentStorage(manager, Position{})
+	positionStore, exist := storage.GetComponentStorage[Position](manager, "position")
 	if !exist {
 		t.Error("Storage is not registered after registration")
 	}
 
-	healthStore, exist := ecsstorage.GetComponentStorage(manager, Health{})
+	healthStore, exist := storage.GetComponentStorage[Health](manager, "health")
 	if !exist {
 		t.Error("Storage is not registered after registration")
 	}
@@ -103,12 +103,12 @@ func TestBitmap(t *testing.T) {
 func TestConcurrentAccess(t *testing.T) {
 	const maxEntities = 7800
 
-	manager := ecsstorage.NewComponentsManager()
-	ecsstorage.RegisterComponent(manager, Position{}, maxEntities, func() *Position {
+	manager := storage.NewComponentsManager()
+	storage.RegisterComponent(manager, "position", Position{}, maxEntities, func() *Position {
 		return &Position{}
 	})
 
-	store, exist := ecsstorage.GetComponentStorage(manager, Position{})
+	store, exist := storage.GetComponentStorage[Position](manager, "position")
 	if !exist {
 		t.Fatal("Storage is not registered after registration")
 	}
