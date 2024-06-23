@@ -35,7 +35,7 @@ func (cm *ComponentsManager) IterateOverStores(fn func(key string, store Compone
 	}
 }
 
-func (cm *ComponentsManager) getBitmap(dist any, storeName string) (*bitmap.Bitmap, bool) {
+func (cm *ComponentsManager) getBitmap(storeName string) (*bitmap.Bitmap, bool) {
 	bm, exist := cm.bitmap[storeName]
 	return bm, exist
 }
@@ -51,22 +51,30 @@ func RegisterComponent[T any](cm *ComponentsManager, storeName string, component
 	cm.bitmap[storeName] = bm
 }
 
-type ComponentStorage[T any] struct {
-	componentReference T
-	name               string
-	components         map[int]*T
-	sparseSet          sparse_set.SparseSet
-	pool               sync.Pool
-	cm                 *ComponentsManager
-	mx                 sync.RWMutex
+type ComponentStorageRepository[T any] interface {
+	Get(int) (*T, bool)
+	Has(entityId int) bool
+	Add(entityId int, component T)
+	Delete(entityId int)
+	Update(entityId int, val T)
+	Bitmap() bitmap.Bitmap
+	Name() string
 }
 
-func NewComponentStorage[T any](cm *ComponentsManager, max_entities_size int, newFunc func() *T, storeName string) *ComponentStorage[T] {
+type ComponentStorage[T any] struct {
+	name       string
+	components map[int]*T
+	sparseSet  sparse_set.SparseSet
+	pool       sync.Pool
+	cm         *ComponentsManager
+	mx         sync.RWMutex
+}
+
+func NewComponentStorage[T any](cm *ComponentsManager, max_entities_size int, newFunc func() *T, storeName string) ComponentStorageRepository[T] {
 	return &ComponentStorage[T]{
-		componentReference: *newFunc(),
-		name:               storeName,
-		components:         make(map[int]*T),
-		sparseSet:          *sparse_set.NewSparseSet(uint32(max_entities_size)),
+		name:       storeName,
+		components: make(map[int]*T),
+		sparseSet:  *sparse_set.NewSparseSet(uint32(max_entities_size)),
 		pool: sync.Pool{
 			New: func() any {
 				return newFunc()
@@ -123,7 +131,7 @@ func (cs *ComponentStorage[T]) Add(entityId int, component T) {
 		cs.components[entityId] = comp
 		cs.sparseSet.Add(entityId)
 
-		bm, _ := cs.cm.getBitmap(component, cs.name)
+		bm, _ := cs.cm.getBitmap(cs.name)
 		bm.Set(uint32(entityId))
 	}
 }
@@ -141,7 +149,7 @@ func (cs *ComponentStorage[T]) Delete(entityId int) {
 	cs.sparseSet.Remove(entityId)
 	delete(cs.components, entityId)
 
-	bm, _ := cs.cm.getBitmap(cs.componentReference, cs.name)
+	bm, _ := cs.cm.getBitmap(cs.name)
 	bm.Remove(uint32(entityId))
 }
 
@@ -158,7 +166,7 @@ func (cs *ComponentStorage[T]) Bitmap() bitmap.Bitmap {
 	cs.mx.RLock()
 	defer cs.mx.RUnlock()
 
-	bitmap, _ := cs.cm.getBitmap(cs.componentReference, cs.name)
+	bitmap, _ := cs.cm.getBitmap(cs.name)
 	clone := bitmap.Clone(nil)
 	return clone
 }
