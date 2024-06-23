@@ -16,7 +16,6 @@ func (cs *ComponentStorage[T]) ToJSON() ([]byte, error) {
 
 	outString, error := json.Marshal(a)
 	if error != nil {
-		fmt.Println(error)
 		return make([]byte, 0), error
 	}
 

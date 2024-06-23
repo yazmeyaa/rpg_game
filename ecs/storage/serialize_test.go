@@ -2,7 +2,6 @@ package storage_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -58,7 +57,6 @@ func TestLoad(t *testing.T) {
 	})
 
 	newStore, _ := storage.GetComponentStorage[components.Position](newManager, "position")
-	fmt.Println(string(data), newStore)
 
 	laodError := newStore.Load(data)
 	assert.NoError(t, laodError, "Erorr while loading error")

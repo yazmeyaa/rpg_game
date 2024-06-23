@@ -39,7 +39,6 @@ func (cm *ComponentsManager) Load(path string) error {
 	cm.IterateOverStores(func(key string, store ComponentStorer) {
 		storeName := store.Name()
 		v, exist := loadJson[storeName]
-		fmt.Println(loadJson)
 		if !exist {
 			return
 		}
