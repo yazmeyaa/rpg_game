@@ -12,7 +12,6 @@ type System interface {
 }
 
 type Systems struct {
-	dt    time.Duration
 	items []System
 }
 
@@ -20,10 +19,6 @@ func NewSystems(systemsCount int) *Systems {
 	return &Systems{
 		items: make([]System, 0, systemsCount),
 	}
-}
-
-func (s *Systems) SetDT(dt time.Duration) {
-	s.dt = dt
 }
 
 func (s *Systems) sortSystems() {
@@ -38,14 +33,15 @@ func (s *Systems) AddSystem(system System) {
 	s.sortSystems()
 }
 
-func (s *Systems) Update() {
+func (s *Systems) Update(dt time.Duration) {
 	for _, system := range s.items {
-		system.Compute(s.dt)
+		system.Compute(dt)
 	}
 }
 
 func (s *Systems) StartUpdating(ctx context.Context, updateInterval time.Duration) {
 	ticker := time.NewTicker(updateInterval)
+	last := time.Now()
 
 	go func() {
 		defer ticker.Stop()
@@ -54,7 +50,9 @@ func (s *Systems) StartUpdating(ctx context.Context, updateInterval time.Duratio
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				s.Update()
+				dt := time.Since(last)
+				s.Update(dt)
+				last = time.Now()
 				continue
 			}
 		}

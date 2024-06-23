@@ -29,8 +29,8 @@ func (s *MovementSystem) Compute(dt time.Duration) {
 	bitmap.Range(func(x uint32) {
 		pos, _ := s.positionStorage.Get(int(x))
 		mov, _ := s.movementStorage.Get(int(x))
-		pos.X += mov.Velocity.X
-		pos.Y += mov.Velocity.Y
+		pos.X += mov.Velocity.X * float64(dt.Milliseconds()) / 1000
+		pos.Y += mov.Velocity.Y * float64(dt.Milliseconds()) / 1000
 	})
 }
 

@@ -45,5 +45,6 @@ func TestWorld(t *testing.T) {
 	ctx.Done()
 
 	pos, _ := posStore.Get(1)
-	assert.Equal(t, &components.Position{X: 12, Y: 12}, pos)
+	assert.True(t, int(pos.X) == 12)
+	assert.True(t, int(pos.Y) == 12)
 }

@@ -2,6 +2,7 @@ package systems_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/deeean/go-vector/vector2"
 	"github.com/stretchr/testify/assert"
@@ -36,7 +37,7 @@ func TestMovementSystem(t *testing.T) {
 	posStore.Add(entityID2, components.Position{X: 10, Y: 10})
 	movStore.Add(entityID2, components.Movement{Velocity: vector2.Vector2{X: -1, Y: -1}})
 
-	world.Systems.Update()
+	world.Systems.Update(time.Second)
 
 	pos1, _ := posStore.Get(entityID1)
 	assert.Equal(t, components.Position{X: 1, Y: 1}, *pos1, "Entity 1 position should be updated correctly")
