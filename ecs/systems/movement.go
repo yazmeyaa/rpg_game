@@ -1,6 +1,8 @@
 package systems
 
 import (
+	"time"
+
 	"github.com/yazmeyaa/rpg_game/ecs/components"
 	"github.com/yazmeyaa/rpg_game/ecs/storage"
 	"github.com/yazmeyaa/rpg_game/ecs/world"
@@ -20,7 +22,7 @@ func NewMovementSystem(world *world.World) *MovementSystem {
 	}
 }
 
-func (s *MovementSystem) Compute() {
+func (s *MovementSystem) Compute(dt time.Duration) {
 	bitmap := s.positionStorage.Bitmap()
 	bitmap.And(s.movementStorage.Bitmap())
 

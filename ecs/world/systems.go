@@ -1,16 +1,18 @@
 package world
 
 import (
-	"fmt"
+	"context"
 	"sort"
+	"time"
 )
 
 type System interface {
-	Compute()
+	Compute(dt time.Duration)
 	Priority() uint8
 }
 
 type Systems struct {
+	dt    time.Duration
 	items []System
 }
 
@@ -18,6 +20,10 @@ func NewSystems(systemsCount int) *Systems {
 	return &Systems{
 		items: make([]System, 0, systemsCount),
 	}
+}
+
+func (s *Systems) SetDT(dt time.Duration) {
+	s.dt = dt
 }
 
 func (s *Systems) sortSystems() {
@@ -34,7 +40,23 @@ func (s *Systems) AddSystem(system System) {
 
 func (s *Systems) Update() {
 	for _, system := range s.items {
-		fmt.Printf("SYSTEM: >>>>>>>>>>>>>>>>>>>>>>>> \n\n%+v\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n", system)
-		system.Compute()
+		system.Compute(s.dt)
 	}
+}
+
+func (s *Systems) StartUpdating(ctx context.Context, updateInterval time.Duration) {
+	ticker := time.NewTicker(updateInterval)
+
+	go func() {
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				s.Update()
+				continue
+			}
+		}
+	}()
 }
