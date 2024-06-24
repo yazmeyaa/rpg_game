@@ -14,7 +14,7 @@ type Position struct{ X, Y float32 }
 type Health struct{ hp uint32 }
 
 func TestEcsStorage(t *testing.T) {
-	world := world.NewWorld(1)
+	world := world.NewWorld()
 	storage.RegisterComponent(world.Components, "position", Position{}, max_entities_size, func() *Position {
 		return &Position{}
 	})

@@ -15,18 +15,18 @@ import (
 
 func TestWorld(t *testing.T) {
 	// ____ SETUP ____
-	world := world.NewWorld(1)
+	world := world.NewWorld()
 	storage.RegisterComponent(world.Components, components.MOVEMENT_STORAGE_NAME, components.Movement{}, 1500, func() *components.Movement {
 		return &components.Movement{}
 	})
 	storage.RegisterComponent(world.Components, components.POSITION_STORAGE_NAME, components.Position{}, 1500, func() *components.Position {
 		return &components.Position{}
 	})
+	world.Systems.AddSystem(systems.NewMovementSystem(world))
 
 	movStore, _ := storage.GetComponentStorage[components.Movement](world.Components, components.MOVEMENT_STORAGE_NAME)
 	posStore, _ := storage.GetComponentStorage[components.Position](world.Components, components.POSITION_STORAGE_NAME)
 
-	world.Systems.AddSystem(systems.NewMovementSystem(world))
 	ctx := context.Background()
 	updateTime := time.Duration(time.Second)
 

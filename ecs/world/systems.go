@@ -15,9 +15,9 @@ type Systems struct {
 	items []System
 }
 
-func NewSystems(systemsCount int) *Systems {
+func NewSystems() *Systems {
 	return &Systems{
-		items: make([]System, 0, systemsCount),
+		items: make([]System, 0),
 	}
 }
 
@@ -28,6 +28,12 @@ func (s *Systems) sortSystems() {
 }
 
 func (s *Systems) AddSystem(system System) {
+	// Увеличиваем capacity на 1 вручную, если слайс переполнен
+	if len(s.items) == cap(s.items) {
+		newItems := make([]System, len(s.items), len(s.items)+1)
+		copy(newItems, s.items)
+		s.items = newItems
+	}
 	s.items = append(s.items, system)
 
 	s.sortSystems()
@@ -53,7 +59,6 @@ func (s *Systems) StartUpdating(ctx context.Context, updateInterval time.Duratio
 				dt := time.Since(last)
 				s.Update(dt)
 				last = time.Now()
-				continue
 			}
 		}
 	}()

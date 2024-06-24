@@ -13,7 +13,7 @@ import (
 )
 
 func TestMovementSystem(t *testing.T) {
-	world := world.NewWorld(2)
+	world := world.NewWorld()
 
 	ecsstorage.RegisterComponent(world.Components, components.POSITION_STORAGE_NAME, components.Position{}, 100, func() *components.Position {
 		return &components.Position{}

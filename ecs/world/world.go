@@ -9,9 +9,9 @@ type World struct {
 	Systems    *Systems
 }
 
-func NewWorld(systemsCount int) *World {
+func NewWorld() *World {
 	return &World{
 		Components: storage.NewComponentsManager(),
-		Systems:    NewSystems(systemsCount),
+		Systems:    NewSystems(),
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/kelindar/bitmap"
-	"github.com/yazmeyaa/sparse_set"
 )
 
 type ComponentStorer interface {
@@ -45,7 +44,7 @@ func RegisterComponent[T any](cm *ComponentsManager, storeName string, component
 		return
 	}
 
-	cm.stores[storeName] = NewComponentStorage(cm, max_entities_size, newFunc, storeName)
+	cm.stores[storeName] = NewComponentStorage(cm, newFunc, storeName)
 	bm := &bitmap.Bitmap{}
 	bm.Grow(uint32(max_entities_size))
 	cm.bitmap[storeName] = bm
@@ -64,17 +63,15 @@ type ComponentStorageRepository[T any] interface {
 type ComponentStorage[T any] struct {
 	name       string
 	components map[int]*T
-	sparseSet  sparse_set.SparseSet
 	pool       sync.Pool
 	cm         *ComponentsManager
 	mx         sync.RWMutex
 }
 
-func NewComponentStorage[T any](cm *ComponentsManager, max_entities_size int, newFunc func() *T, storeName string) ComponentStorageRepository[T] {
+func NewComponentStorage[T any](cm *ComponentsManager, newFunc func() *T, storeName string) ComponentStorageRepository[T] {
 	return &ComponentStorage[T]{
 		name:       storeName,
 		components: make(map[int]*T),
-		sparseSet:  *sparse_set.NewSparseSet(uint32(max_entities_size)),
 		pool: sync.Pool{
 			New: func() any {
 				return newFunc()
@@ -103,7 +100,7 @@ func (cs *ComponentStorage[T]) Get(entityId int) (*T, bool) {
 	defer cs.mx.RUnlock()
 
 	var element *T
-	if !cs.sparseSet.Contains(entityId) {
+	if !cs.Bitmap().Contains(uint32(entityId)) {
 		return element, false
 	}
 
@@ -114,14 +111,16 @@ func (cs *ComponentStorage[T]) Has(entityId int) bool {
 	cs.mx.RLock()
 	defer cs.mx.RUnlock()
 
-	return cs.sparseSet.Contains(entityId)
+	return cs.Bitmap().Contains(uint32(entityId))
 }
 
 func (cs *ComponentStorage[T]) Add(entityId int, component T) {
+	bm, _ := cs.cm.getBitmap(cs.name)
+
 	cs.mx.Lock()
 	defer cs.mx.Unlock()
 
-	if cs.sparseSet.Contains(entityId) {
+	if bm.Contains(uint32(entityId)) {
 		return
 	}
 
@@ -129,28 +128,24 @@ func (cs *ComponentStorage[T]) Add(entityId int, component T) {
 	if comp, ok := poolComponent.(*T); ok {
 		*comp = component
 		cs.components[entityId] = comp
-		cs.sparseSet.Add(entityId)
-
-		bm, _ := cs.cm.getBitmap(cs.name)
 		bm.Set(uint32(entityId))
 	}
 }
 
 func (cs *ComponentStorage[T]) Delete(entityId int) {
+	bm, _ := cs.cm.getBitmap(cs.name)
+
 	cs.mx.Lock()
 	defer cs.mx.Unlock()
 
-	if !cs.sparseSet.Contains(entityId) {
+	if !bm.Contains(uint32(entityId)) {
 		return
 	}
 
 	component := cs.components[entityId]
 	cs.pool.Put(component)
-	cs.sparseSet.Remove(entityId)
-	delete(cs.components, entityId)
-
-	bm, _ := cs.cm.getBitmap(cs.name)
 	bm.Remove(uint32(entityId))
+	delete(cs.components, entityId)
 }
 
 func (cs *ComponentStorage[T]) Update(entityId int, val T) {
@@ -163,10 +158,11 @@ func (cs *ComponentStorage[T]) Update(entityId int, val T) {
 }
 
 func (cs *ComponentStorage[T]) Bitmap() bitmap.Bitmap {
+	bitmap, _ := cs.cm.getBitmap(cs.name)
+
 	cs.mx.RLock()
 	defer cs.mx.RUnlock()
 
-	bitmap, _ := cs.cm.getBitmap(cs.name)
 	clone := bitmap.Clone(nil)
 	return clone
 }
